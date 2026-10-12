@@ -3,11 +3,11 @@
   "version": "0.1.1",
   "description": "A founder for your agent teams: turns your vision into a vision doc and ambitious phase briefs on top of blueprint's SOW, collects the teams' questions, and works through every open detail with you.",
   "author": {
-    "name": "OneNomad LLC",
+    "name": "Matt Stvartak",
     "email": "matt@onenomad.dev"
   },
-  "homepage": "https://github.com/OneNomad-LLC/claude-skills",
-  "repository": "https://github.com/OneNomad-LLC/claude-skills",
+  "homepage": "https://github.com/mattstvartak/claude-skills",
+  "repository": "https://github.com/mattstvartak/claude-skills",
   "license": "Apache-2.0",
   "keywords": [
     "planning",

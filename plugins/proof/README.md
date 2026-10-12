@@ -30,6 +30,6 @@ See `NOTICE`.
 ## Install
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install proof@claude-skills
 ```

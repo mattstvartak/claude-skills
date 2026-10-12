@@ -34,7 +34,7 @@ layered heroes, scroll-scrubbed video, and imagery generated through kie.ai.
 ## Install
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install craft@claude-skills
 ```
 

@@ -30,7 +30,7 @@ kickoff prompt.
 ## Install
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install kickoff@claude-skills
 /plugin install blueprint@claude-skills
 ```

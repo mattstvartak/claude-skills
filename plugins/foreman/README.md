@@ -40,6 +40,6 @@ The approach was inspired by `implement-spec` in
 ## Install
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install foreman@claude-skills
 ```

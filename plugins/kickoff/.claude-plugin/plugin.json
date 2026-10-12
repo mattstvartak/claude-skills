@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "description": "One command to start or resume a project: checks which claude-skills plugins are installed, reads the project's docs to find the stage, and runs founder, blueprint, craft and foreman in order, pausing at the calls that are yours.",
   "author": {
-    "name": "OneNomad LLC",
+    "name": "Matt Stvartak",
     "email": "matt@onenomad.dev"
   },
-  "homepage": "https://github.com/OneNomad-LLC/claude-skills",
-  "repository": "https://github.com/OneNomad-LLC/claude-skills",
+  "homepage": "https://github.com/mattstvartak/claude-skills",
+  "repository": "https://github.com/mattstvartak/claude-skills",
   "license": "Apache-2.0",
   "keywords": [
     "kickoff",

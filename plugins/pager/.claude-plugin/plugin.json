@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "description": "Lazy senior DevOps mode, always on: the fewest moving parts that fully solve the infrastructure task, with a verified rollout and a way back.",
   "author": {
-    "name": "OneNomad LLC",
+    "name": "Matt Stvartak",
     "email": "matt@onenomad.dev"
   },
-  "homepage": "https://github.com/OneNomad-LLC/claude-skills",
-  "repository": "https://github.com/OneNomad-LLC/claude-skills",
+  "homepage": "https://github.com/mattstvartak/claude-skills",
+  "repository": "https://github.com/mattstvartak/claude-skills",
   "license": "Apache-2.0",
   "keywords": [
     "devops",

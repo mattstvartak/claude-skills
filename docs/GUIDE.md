@@ -20,7 +20,7 @@ This guide covers installing the plugins, what each one does day to day, and how
 In Claude Code:
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install kickoff@claude-skills
 /plugin install founder@claude-skills
 /plugin install blueprint@claude-skills
@@ -42,7 +42,7 @@ Install only what you'll use. kickoff, founder and foreman need blueprint, becau
 **More than one Claude account on a machine.** Each config directory has its own plugins. If you run a second account with `CLAUDE_CONFIG_DIR=~/.claude-work`, install there too:
 
 ```
-CLAUDE_CONFIG_DIR=~/.claude-work claude plugin marketplace add OneNomad-LLC/claude-skills
+CLAUDE_CONFIG_DIR=~/.claude-work claude plugin marketplace add mattstvartak/claude-skills
 CLAUDE_CONFIG_DIR=~/.claude-work claude plugin install founder@claude-skills
 ```
 

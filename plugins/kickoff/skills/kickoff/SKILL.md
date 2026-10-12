@@ -34,7 +34,7 @@ Look at the skills available in this session.
 For anything missing, print one block the user can paste, then carry on with what's there:
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install <plugin>@claude-skills
 ```
 

@@ -29,6 +29,6 @@ to design and build.
 ## Install
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install blueprint@claude-skills
 ```

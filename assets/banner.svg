@@ -16,7 +16,7 @@
   </g>
   <rect x="80" y="104" width="10" height="92" rx="5" fill="url(#accent)"/>
   <text x="112" y="160" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="64" font-weight="700" fill="#f4f1ea" letter-spacing="-1.5">claude-skills</text>
-  <text x="114" y="196" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" fill="#a9b1c3">A small senior team for Claude Code, by OneNomad</text>
+  <text x="114" y="196" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" fill="#a9b1c3">A small senior team for Claude Code, by Matt Stvartak</text>
   <g font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="17" fill="#c9cfdb">
     <text x="700" y="112">/founder</text>
     <text x="700" y="142">/blueprint</text>

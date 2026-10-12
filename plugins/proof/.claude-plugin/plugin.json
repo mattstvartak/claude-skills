@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "description": "Two on-demand engineering disciplines: test-first red to green one slice at a time, and a gated loop for diagnosing hard bugs and performance regressions.",
   "author": {
-    "name": "OneNomad LLC",
+    "name": "Matt Stvartak",
     "email": "matt@onenomad.dev"
   },
-  "homepage": "https://github.com/OneNomad-LLC/claude-skills",
-  "repository": "https://github.com/OneNomad-LLC/claude-skills",
+  "homepage": "https://github.com/mattstvartak/claude-skills",
+  "repository": "https://github.com/mattstvartak/claude-skills",
   "license": "Apache-2.0",
   "keywords": [
     "tdd",

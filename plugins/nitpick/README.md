@@ -48,6 +48,6 @@ Both reviewer agents run on Sonnet. Change `model` in `agents/nitpick.md` and
 ## Install
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install nitpick@claude-skills
 ```

@@ -1,11 +1,11 @@
 {
   "name": "claude-skills",
   "owner": {
-    "name": "OneNomad LLC",
+    "name": "Matt Stvartak",
     "email": "matt@onenomad.dev"
   },
   "metadata": {
-    "description": "OneNomad's Claude Code skill library"
+    "description": "Matt Stvartak's Claude Code skill library"
   },
   "plugins": [
     {

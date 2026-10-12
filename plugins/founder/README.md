@@ -29,7 +29,7 @@ Files it keeps: `docs/founder/VISION.md`, `docs/founder/QUESTIONS.md` and
 ## Install
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install blueprint@claude-skills
 /plugin install founder@claude-skills
 ```

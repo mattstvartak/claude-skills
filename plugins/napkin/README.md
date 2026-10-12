@@ -26,6 +26,6 @@ Needs `node` on the PATH that hooks run with. State lives in
 ## Install
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install napkin@claude-skills
 ```

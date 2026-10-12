@@ -10,7 +10,7 @@
 
 <p align="center">
   <b>A founder, a designer, a foreman, an architect, an ops engineer, a lazy senior dev and a reviewer, each with strong opinions.</b><br>
-  OneNomad's Claude Code plugins for taking an app from an idea to shipped code without the usual mess.
+  Matt Stvartak's Claude Code plugins for taking an app from an idea to shipped code without the usual mess.
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 ## Install
 
 ```
-/plugin marketplace add OneNomad-LLC/claude-skills
+/plugin marketplace add mattstvartak/claude-skills
 /plugin install kickoff@claude-skills
 ```
 
