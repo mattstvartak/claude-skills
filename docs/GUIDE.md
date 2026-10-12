@@ -3,6 +3,7 @@
 This guide covers installing the plugins, what each one does day to day, and how to run a project through all of them. For a quick overview, see the [README](../README.md).
 
 - [Install](#install)
+- [kickoff](#kickoff)
 - [founder](#founder)
 - [blueprint](#blueprint)
 - [craft](#craft)
@@ -20,6 +21,7 @@ In Claude Code:
 
 ```
 /plugin marketplace add OneNomad-LLC/claude-skills
+/plugin install kickoff@claude-skills
 /plugin install founder@claude-skills
 /plugin install blueprint@claude-skills
 /plugin install craft@claude-skills
@@ -33,7 +35,7 @@ In Claude Code:
 
 Or from a terminal, with `claude plugin marketplace add` and `claude plugin install` and the same arguments. Restart Claude Code afterwards.
 
-Install only what you'll use. founder and foreman need blueprint, because they work from its SOW and build plan. The others stand alone. trim replaces [ponytail](https://github.com/DietrichGebert/ponytail), so don't install both.
+Install only what you'll use. kickoff, founder and foreman need blueprint, because they work from its SOW and build plan. The others stand alone. trim replaces [ponytail](https://github.com/DietrichGebert/ponytail), so don't install both.
 
 **Requirements.** trim, napkin and pager run small Node hooks, so `node` must be on the PATH Claude Code uses for hooks. craft needs Node 20 or later. Its scripts install Playwright into `~/.cache/craft-tools` the first time they run.
 
@@ -49,6 +51,27 @@ CLAUDE_CONFIG_DIR=~/.claude-work claude plugin install founder@claude-skills
 ```
 claude plugin marketplace add ~/path/to/claude-skills
 ```
+
+## kickoff
+
+kickoff runs the other skills in order so you don't have to remember which comes next. Run `/kickoff` to start a project, or `/kickoff <your idea>` to start with the idea, and run it again whenever you come back.
+
+It first checks which plugins are installed and prints the install commands for any that are missing. Only blueprint is required. Then it reads the project's docs and picks the stage:
+
+| Stage | When | Runs |
+|---|---|---|
+| Vision | New product, no vision or SOW yet | `/founder vision` |
+| Scope | No SOW, or the SOW is still a draft | `/blueprint` |
+| Vision check | SOW agreed, no build plan yet | `/founder vision` against the SOW |
+| Design | The SOW has screens and no prototype is approved | `/craft`, up to the prototype review |
+| Build plan | No build plan | blueprint's build plan |
+| Questions | Blocking questions open for the next phase | `/founder questions` |
+| Brief | The next phase has no brief | `/founder brief <phase>` |
+| Build | A phase is unfinished | `/foreman <phase>` |
+
+When a stage finishes it reads the docs again and moves on. It stops for you to agree the SOW, approve the prototype and say yes before foreman starts a build. Name a stage to jump to it: `/kickoff design`.
+
+kickoff keeps no state of its own. The only thing it writes is a dated "prototype approved" entry under Decisions in `docs/blueprint/NOTES.md`, which is how later runs know design is done.
 
 ## founder
 
@@ -187,6 +210,8 @@ The phase ends with nitpick against the plan and brief, one fix pass, and a repo
 foreman never pushes, opens a pull request, merges into a trunk or deploys.
 
 ## A full project, start to finish
+
+`/kickoff` walks you through these steps and resumes from wherever you left off. To run them by hand:
 
 1. **`/founder vision`**. Describe the idea. The founder asks who it's for, what makes it remarkable and where it goes, and writes `VISION.md`.
 2. **blueprint takes over**. The interview fills in users, flows, data, integrations and hosting. Agree the SOW and the MVP cut.

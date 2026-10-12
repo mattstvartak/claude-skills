@@ -5,7 +5,7 @@
 <p align="center">
   <a href="LICENSE"><img alt="Licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-1f2533?style=flat-square"></a>
   <img alt="Claude Code plugins" src="https://img.shields.io/badge/Claude%20Code-plugins-e86a5a?style=flat-square">
-  <img alt="Nine plugins" src="https://img.shields.io/badge/plugins-9-f2a65a?style=flat-square">
+  <img alt="Ten plugins" src="https://img.shields.io/badge/plugins-10-f2a65a?style=flat-square">
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 
 ```
 /plugin marketplace add OneNomad-LLC/claude-skills
-/plugin install founder@claude-skills
+/plugin install kickoff@claude-skills
 ```
 
 Install the rest the same way, or only the ones you want. Restart Claude Code to load them. The [guide](docs/GUIDE.md) covers each one in detail.
@@ -35,6 +35,7 @@ Install the rest the same way, or only the ones you want. Restart Claude Code to
 
 | | Plugin | Role | You run it |
 |---|---|---|---|
+| 🚦 | [**kickoff**](plugins/kickoff) | The front door. Reads the project's docs, works out the stage and runs the right skill next, pausing at the calls that are yours. | `/kickoff` |
 | 🧭 | [**founder**](plugins/founder) | Turns your vision into a vision doc and one-page briefs for agent teams, collects their questions and works through every open detail with you. | `/founder` |
 | 📐 | [**blueprint**](plugins/blueprint) | Interviews you until it can write a full SOW, then a build plan sized for agent batches and a kickoff prompt. | `/blueprint` |
 | 🎨 | [**craft**](plugins/craft) | Designs and builds premium interfaces: brief, taste picker, OKLCH tokens, a prototype for review, production code, screenshot checks. | `/craft` |
@@ -74,7 +75,7 @@ flowchart LR
 6. **Questions.** Workers' questions land in founder's inbox. `/founder questions` answers what's settled and brings you the rest.
 7. **Review.** foreman closes each phase with `/nitpick`, which checks standards and the spec. `/debug` is there when something breaks.
 
-Each plugin also works on its own.
+`/kickoff` runs this whole sequence for you. It reads where the project stands, starts the next step, and moves on when it's done. Each plugin also works on its own.
 
 ## Credits
 
