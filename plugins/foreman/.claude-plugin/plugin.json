@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "description": "Runs a build phase from blueprint's plan with parallel Sonnet workers in separate worktrees, merges into one integration branch with an Opus integrator for conflicts, and closes with a nitpick review.",
   "author": {
-    "name": "Matt Stvartak",
-    "email": "matt@onenomad.dev"
+    "name": "Matt Stvartak"
   },
   "homepage": "https://github.com/mattstvartak/claude-skills",
   "repository": "https://github.com/mattstvartak/claude-skills",

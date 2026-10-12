@@ -2,7 +2,7 @@
   "name": "blueprint",
   "version": "0.1.2",
   "description": "Project onboarding for Claude Code: a natural interview with a coverage tracker that turns an app idea, or an existing codebase, into a full SOW (product definition and technical plan), then hands off to design and build.",
-  "author": { "name": "Matt Stvartak", "email": "matt@onenomad.dev" },
+  "author": { "name": "Matt Stvartak" },
   "homepage": "https://github.com/mattstvartak/claude-skills",
   "repository": "https://github.com/mattstvartak/claude-skills",
   "license": "Apache-2.0",

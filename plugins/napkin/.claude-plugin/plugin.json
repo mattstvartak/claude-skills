@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "description": "Lazy senior architect mode, always on: the fewest components that meet the real requirements, sized for today's scale and written down with when to revisit.",
   "author": {
-    "name": "Matt Stvartak",
-    "email": "matt@onenomad.dev"
+    "name": "Matt Stvartak"
   },
   "homepage": "https://github.com/mattstvartak/claude-skills",
   "repository": "https://github.com/mattstvartak/claude-skills",

@@ -1,8 +1,7 @@
 {
   "name": "claude-skills",
   "owner": {
-    "name": "Matt Stvartak",
-    "email": "matt@onenomad.dev"
+    "name": "Matt Stvartak"
   },
   "metadata": {
     "description": "Matt Stvartak's Claude Code skill library"

@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "description": "Lazy senior developer mode, always on: the smallest complete change that solves the task, with every deliberate shortcut marked and its limit written down.",
   "author": {
-    "name": "Matt Stvartak",
-    "email": "matt@onenomad.dev"
+    "name": "Matt Stvartak"
   },
   "homepage": "https://github.com/mattstvartak/claude-skills",
   "repository": "https://github.com/mattstvartak/claude-skills",

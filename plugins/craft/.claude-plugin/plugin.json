@@ -3,8 +3,7 @@
   "version": "0.2.0",
   "description": "Premium web and app design for Claude Code: brief interview, taste picker, token system, prototype, production build and screenshot verification. Covers marketing sites, web apps, mobile and desktop UI.",
   "author": {
-    "name": "Matt Stvartak",
-    "email": "matt@onenomad.dev"
+    "name": "Matt Stvartak"
   },
   "homepage": "https://github.com/mattstvartak/claude-skills",
   "repository": "https://github.com/mattstvartak/claude-skills",
