@@ -33,7 +33,8 @@ export const kitDir = (scenePath, kit) => join(reelDir(scenePath), 'kits', kit)
 
 const nextFrames = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)))
 
-export async function openStage(scenePath, { width, theme = 'light', scale = 2, transparent = false } = {}) {
+export async function openStage(scenePath, { width, theme = 'light', scale = 2, transparent = false, background } = {}) {
+  if (background && !/^[\w\s#(),.%/-]+$/.test(background)) throw new Error(`not a CSS colour: ${background}`)
   const abs = resolve(scenePath)
   const scene = JSON.parse(await readFile(abs, 'utf8'))
   // only the reel folder and the runtime are served, not the rest of the site
@@ -60,7 +61,7 @@ export async function openStage(scenePath, { width, theme = 'light', scale = 2, 
     await page.route(`${origin}/__stage.html`, (r) =>
       r.fulfill({
         contentType: 'text/html',
-        body: `<!doctype html><meta charset="utf-8"><body style="margin:0"><script type="module" src="${PREFIX}reel.js"></script>`,
+        body: `<!doctype html><meta charset="utf-8"><body style="margin:0${background ? `;background:${background}` : ''}"><script type="module" src="${PREFIX}reel.js"></script>`,
       }),
     )
     await page.goto(`${origin}/__stage.html`)

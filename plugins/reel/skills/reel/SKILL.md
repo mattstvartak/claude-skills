@@ -61,7 +61,7 @@ node scripts/validate.mjs <scene.json>
 node scripts/stills.mjs <scene.json> --times 0,2.5,posterAt,storyboard --out <dir> [--theme light|dark|both] [--width N] [--scale 2]
 node scripts/preview.mjs <scene.json> --out <file.html> [--stills <dir>] [--report <file.json>]
 node scripts/fitcheck.mjs <scene.json> [width ...]
-node scripts/render.mjs <scene.json> --out <dir> [--formats mp4,webm,gif,poster,scrub] [--theme light|dark] [--scale 2]
+node scripts/render.mjs <scene.json> --out <dir> [--formats mp4,webm,gif,poster,scrub] [--theme light|dark] [--scale 2] [--bg <css colour>]
 node scripts/export.mjs <scene.json> [--site <dir>] [--formats mp4,webm,gif,poster,scrub] [--skip-video] [--force] [--scale 2] [--report <file.json>]
 node scripts/media.mjs add <file|url> --author A --licence L [--url U] [--source supplied|stock]
 node scripts/media.mjs check [siteDir]

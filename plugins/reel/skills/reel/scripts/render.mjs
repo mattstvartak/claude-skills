@@ -10,12 +10,12 @@ import { loopSeam, typicalDelta } from './lib/loopcheck.mjs'
 const even = (n) => Math.floor(n / 2) * 2
 const SAMPLE_PAIRS = 30
 
-export async function render(scenePath, { out, formats = FORMATS, theme = 'light', scale = 2 } = {}) {
+export async function render(scenePath, { out, formats = FORMATS, theme = 'light', scale = 2, background } = {}) {
   if (!out) throw new Error('render needs an out dir')
   const started = Date.now()
   const outDir = resolve(out)
   mkdirSync(outDir, { recursive: true })
-  const stage = await openStage(scenePath, { theme, scale })
+  const stage = await openStage(scenePath, { theme, scale, background })
   try {
     const { scene } = stage
     const loop = !!scene.loop
@@ -74,7 +74,7 @@ export async function render(scenePath, { out, formats = FORMATS, theme = 'light
 
 if (isMain(import.meta.url)) {
   const { values, positionals } = parseCli(
-    '<scene.json> --out <dir> [--formats mp4,webm,gif,poster,scrub] [--theme light|dark] [--scale 2]',
+    '<scene.json> --out <dir> [--formats mp4,webm,gif,poster,scrub] [--theme light|dark] [--scale 2] [--bg <css colour>]',
     {
       min: 1,
       required: ['out'],
@@ -83,6 +83,7 @@ if (isMain(import.meta.url)) {
         formats: { type: 'string', default: FORMATS.join(',') },
         theme: { type: 'string', default: 'light' },
         scale: { type: 'string', default: '2' },
+        bg: { type: 'string' },
       },
       enums: { formats: FORMATS, theme: ['light', 'dark'] },
       numeric: ['scale'],
@@ -95,6 +96,7 @@ if (isMain(import.meta.url)) {
     formats: values.formats.split(',').map((s) => s.trim()),
     theme: values.theme,
     scale: Number(values.scale),
+    background: values.bg,
   })
   writeFileSync(join(resolve(values.out), 'render-report.json'), JSON.stringify(report, null, 2) + '\n')
   console.log(JSON.stringify(report, null, 2))
