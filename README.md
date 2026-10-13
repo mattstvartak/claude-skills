@@ -49,6 +49,12 @@ Install the rest the same way, or only the ones you want. Restart Claude Code to
 
 **Always on** means the plugin adds its rules at the start of every session and to every subagent, and the rules only kick in when the task is in its area. trim covers application code, napkin system design and pager infrastructure. Switch each with `/<name> lite|full|ultra|off`.
 
+## Tools
+
+| | Plugin | What it does | You run it |
+|---|---|---|---|
+| 🔀 | [**router**](plugins/router) | Switches a running session between your Claude subscriptions without `/login`, and asks to reroute when the 5-hour window passes 80% or the weekly one 90%. | `/route` |
+
 ## How they fit together
 
 ```mermaid

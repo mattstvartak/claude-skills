@@ -149,6 +149,18 @@
         "refactoring",
         "audit"
       ]
+    },
+    {
+      "name": "router",
+      "source": "./plugins/router",
+      "description": "Switch a running Claude Code session between your stored Claude subscriptions with /route, and get asked to reroute when a usage window runs high.",
+      "version": "0.1.0",
+      "keywords": [
+        "accounts",
+        "subscription",
+        "usage-limits",
+        "rate-limits"
+      ]
     }
   ]
 }

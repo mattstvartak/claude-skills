@@ -1,0 +1,19 @@
+{
+  "name": "router",
+  "version": "0.1.0",
+  "description": "Switch a running Claude Code session between your stored Claude subscriptions with /route, and get asked to reroute when a usage window runs high.",
+  "author": {
+    "name": "Matt Stvartak"
+  },
+  "homepage": "https://github.com/mattstvartak/claude-skills",
+  "repository": "https://github.com/mattstvartak/claude-skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "accounts",
+    "subscription",
+    "usage-limits",
+    "rate-limits"
+  ],
+  "hooks": "./hooks/hooks.json",
+  "types": "./types/index.d.ts"
+}

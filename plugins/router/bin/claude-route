@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+# Swaps which Claude subscription ~/.claude holds. Claude Code re-reads its credentials
+# file when it changes, so open sessions send their next message on the new login.
+# Each account's login is kept in ~/.config/claude-route/logins/<name>.json (mode 600):
+# the claudeAiOauth block of .credentials.json and the oauthAccount block of .claude.json.
+#
+#   claude-route add <name>                  sign in to another account and store it as <name>
+#   claude-route save <name>                 store the login that's active now as <name>
+#   claude-route import <name> <config-dir>  store a login made under CLAUDE_CONFIG_DIR=<config-dir>
+#   claude-route use <name>                  make <name> the active login
+#   claude-route next [resets-at]            mark the active account spent, switch to the next free one
+#   claude-route status
+#
+# Only the default ~/.claude config is touched: it refuses to run under another
+# CLAUDE_CONFIG_DIR. Put one email per line in ~/.config/claude-route/allowed to limit
+# which accounts it will store or activate.
+# Don't /logout to change accounts: it can revoke the refresh token being left behind.
+set -euo pipefail
+
+home="${CLAUDE_ROUTE_HOME:-$HOME}"
+conf="${CLAUDE_ROUTE_CONF:-$HOME/.config/claude-route}"
+creds="$home/.claude/.credentials.json"
+config="$home/.claude.json"
+
+if [ -n "${CLAUDE_CONFIG_DIR:-}" ] && [ "$(realpath -m "$CLAUDE_CONFIG_DIR")" != "$(realpath -m "$home/.claude")" ]; then
+  echo "claude-route only works on the default ~/.claude, not $CLAUDE_CONFIG_DIR" >&2
+  exit 1
+fi
+
+mkdir -p "$conf/limited"
+mkdir -p -m 700 "$conf/logins"
+touch "$conf/accounts" "$conf/active"
+
+active() { cat "$conf/active"; }
+
+remember() {
+  grep -qxF "$1" "$conf/accounts" || echo "$1" >> "$conf/accounts"
+}
+
+# A credentials file and config file pair, in the shape logins/<name>.json keeps.
+login_of() {
+  jq -n -c --slurpfile c "$1" --slurpfile g "$2" \
+    '{claudeAiOauth: $c[0].claudeAiOauth, oauthAccount: $g[0].oauthAccount}'
+}
+
+email_of() { jq -r '.oauthAccount.emailAddress // empty' <<< "$1"; }
+
+is_allowed() {
+  [ -s "$conf/allowed" ] || return 0
+  local email; email="$(email_of "$1")"
+  grep -qxF "$email" "$conf/allowed" ||
+    { echo "${email:-an unnamed account} isn't listed in $conf/allowed" >&2; return 1; }
+}
+
+store() {
+  [ "$(refresh_token "$2")" ] || { echo "no Claude login to store for $1" >&2; return 1; }
+  is_allowed "$2"
+  local other uuid; uuid="$(jq -r '.oauthAccount.accountUuid // empty' <<< "$2")"
+  for other in "$conf"/logins/*.json; do
+    [ -e "$other" ] && [ "$(basename "$other" .json)" != "$1" ] || continue
+    [ "$(jq -r '.oauthAccount.accountUuid // empty' "$other")" != "$uuid" ] ||
+      { echo "that login is the same account already stored as $(basename "$other" .json)" >&2; return 1; }
+  done
+  (umask 077 && printf '%s\n' "$2" > "$conf/logins/$1.json.tmp")
+  mv "$conf/logins/$1.json.tmp" "$conf/logins/$1.json"
+}
+
+load() { cat "$conf/logins/$1.json" 2>/dev/null; }
+
+refresh_token() { jq -r '.claudeAiOauth.refreshToken // empty' <<< "$1"; }
+
+# Claude Code's proper-lockfile protocol: the lock is a directory, stale once its mtime
+# is older than the holder's stale setting. The swap is local I/O so it never needs a toucher.
+held=()
+lock() {
+  local dir="$1" stale="$2" deadline=$(( $(date +%s) + 9 ))
+  until mkdir "$dir" 2>/dev/null; do
+    if [ -d "$dir" ] && [ $(( $(date +%s) - $(stat -c %Y "$dir" 2>/dev/null || date +%s) )) -gt "$stale" ]; then
+      rmdir "$dir" 2>/dev/null || true
+      continue
+    fi
+    [ "$(date +%s)" -lt "$deadline" ] || { echo "Claude Code is holding $dir, try again in a few seconds" >&2; return 1; }
+    sleep 0.3
+  done
+  held+=("$dir")
+}
+unlock_all() {
+  local d
+  for d in "${held[@]}"; do rmdir "$d" 2>/dev/null || true; done
+  held=()
+}
+signin=""
+trap 'unlock_all; [ -z "$signin" ] || rm -rf "$signin"' EXIT
+
+# Same order Claude Code takes them: the token refresh lock, then the credential store's
+# write lock, then the config file's.
+lock_claude() {
+  lock "$home/.claude/.oauth_refresh.lock" 60 && lock "$home/.claude/.storage-write.lock" 15 &&
+    lock "$home/.claude.lock" 60 && lock "$config.lock" 10
+}
+
+write_login() {
+  (umask 077
+    jq --slurpfile l /dev/stdin '.claudeAiOauth = $l[0].claudeAiOauth' "$creds" > "$creds.route-tmp" <<< "$1"
+    jq --slurpfile l /dev/stdin '.oauthAccount = $l[0].oauthAccount' "$config" > "$config.route-tmp" <<< "$1")
+  chmod --reference="$creds" "$creds.route-tmp"
+  chmod --reference="$config" "$config.route-tmp"
+  mv "$creds.route-tmp" "$creds"
+  mv "$config.route-tmp" "$config"
+}
+
+use() {
+  local from target
+  from="$(active)"
+  [ "$from" = "$1" ] && { echo "Already on $1."; return 0; }
+  target="$(load "$1")"
+  [ "$(refresh_token "$target")" ] || { echo "nothing stored for $1" >&2; return 1; }
+  is_allowed "$target"
+
+  # Under Claude Code's locks a token refresh can't land between saving the outgoing
+  # login and writing the new one.
+  lock_claude
+  [ -z "$from" ] || store "$from" "$(login_of "$creds" "$config")"
+  write_login "$target"
+  unlock_all
+  echo "$1" > "$conf/active"
+  echo "Switched from ${from:-nothing} to $1 ($(email_of "$target"))."
+}
+
+# The sign-in folder is deleted on exit, never logged out of: that would revoke the
+# refresh token just stored.
+add() {
+  command -v claude > /dev/null || { echo "claude isn't on PATH" >&2; return 1; }
+  signin="$(mktemp -d)"
+  CLAUDE_CONFIG_DIR="$signin" claude auth login
+  store "$1" "$(login_of "$signin/.credentials.json" "$signin/.claude.json")"
+  remember "$1"
+  echo "Stored $1 ($(email_of "$(load "$1")"))."
+}
+
+is_limited() {
+  local f="$conf/limited/$1"
+  [ -f "$f" ] && [ "$(date +%s)" -lt "$(cat "$f")" ]
+}
+
+next() {
+  exec 9> "$conf/lock"
+  flock 9
+  # Every open session can ask at once; only the first one swaps.
+  # shortcut: a 60s window, key it to the account if sessions start disagreeing.
+  [ -f "$conf/last-switch" ] && [ $(( $(date +%s) - $(stat -c %Y "$conf/last-switch") )) -lt 60 ] &&
+    { echo "Already switched to $(active)."; return 0; }
+
+  local from; from="$(active)"
+  [ -n "$from" ] || { echo "no active account, run claude-route save <name> first" >&2; return 1; }
+  mapfile -t names < "$conf/accounts"
+  local i n=${#names[@]} start=0
+  [ "$n" -gt 1 ] || { echo "$from is the only stored account, add another with claude-route add <name>" >&2; return 1; }
+  date -d "${1:-+5 hours}" +%s > "$conf/limited/$from"
+
+  for i in "${!names[@]}"; do [ "${names[$i]}" = "$from" ] && start=$i; done
+  for ((i = 1; i < n; i++)); do
+    local name="${names[$(( (start + i) % n ))]}"
+    is_limited "$name" && continue
+    use "$name"
+    touch "$conf/last-switch"
+    return 0
+  done
+  echo "every account is near its limit" >&2
+  return 1
+}
+
+status() {
+  local name a; a="$(active)"
+  [ -s "$conf/accounts" ] || { echo "No accounts stored. Run claude-route save <name> for the one signed in now."; return 0; }
+  while read -r name; do
+    [ -n "$name" ] || continue
+    printf '%s%s  %s%s\n' "$([ "$name" = "$a" ] && echo '* ' || echo '  ')" "$name" \
+      "$(email_of "$(load "$name")")" \
+      "$(is_limited "$name" && echo " (resting until $(date -d "@$(cat "$conf/limited/$name")" '+%a %H:%M'))")"
+  done < "$conf/accounts"
+}
+
+named() {
+  [[ "$1" =~ ^[A-Za-z0-9_-]+$ ]] || { echo "account names use letters, digits, - and _ only" >&2; exit 1; }
+}
+[ -z "${2:-}" ] || [ "$1" = next ] || named "$2"
+
+case "${1:-}" in
+  add) add "${2:?name}" ;;
+  save) store "${2:?name}" "$(login_of "$creds" "$config")"; remember "$2"; echo "$2" > "$conf/active" ;;
+  import) dir="${3:?config-dir}"
+    store "${2:?name}" "$(login_of "$dir/.credentials.json" "$dir/.claude.json")"
+    remember "$2"
+    echo "stored $2. Its login still sits in $dir, delete that folder when you're done." ;;
+  use) use "${2:?name}" ;;
+  next) next "${2:-}" ;;
+  status) status ;;
+  *) sed -n '2,/^set -euo/p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac
