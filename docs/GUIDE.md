@@ -7,6 +7,7 @@ This guide covers installing the plugins, what each one does day to day, and how
 - [founder](#founder)
 - [blueprint](#blueprint)
 - [craft](#craft)
+- [reel](#reel)
 - [foreman](#foreman)
 - [proof](#proof)
 - [trim, napkin and pager](#trim-napkin-and-pager)
@@ -25,6 +26,7 @@ In Claude Code:
 /plugin install founder@claude-skills
 /plugin install blueprint@claude-skills
 /plugin install craft@claude-skills
+/plugin install reel@claude-skills
 /plugin install foreman@claude-skills
 /plugin install proof@claude-skills
 /plugin install trim@claude-skills
@@ -37,7 +39,7 @@ Or from a terminal, with `claude plugin marketplace add` and `claude plugin inst
 
 Install only what you'll use. kickoff, founder and foreman need blueprint, because they work from its SOW and build plan. The others stand alone. trim replaces [ponytail](https://github.com/DietrichGebert/ponytail), so don't install both.
 
-**Requirements.** trim, napkin and pager run small Node hooks, so `node` must be on the PATH Claude Code uses for hooks. craft needs Node 20 or later. Its scripts install Playwright into `~/.cache/craft-tools` the first time they run.
+**Requirements.** trim, napkin and pager run small Node hooks, so `node` must be on the PATH Claude Code uses for hooks. craft needs Node 20 or later. Its scripts install Playwright into `~/.cache/craft-tools` the first time they run. reel needs Node 20 or later and a full ffmpeg build. It uses craft's Playwright when that's already installed, and otherwise installs its own into `~/.cache/reel-tools`.
 
 **More than one Claude account on a machine.** Each config directory has its own plugins. If you run a second account with `CLAUDE_CONFIG_DIR=~/.claude-work`, install there too:
 
@@ -129,6 +131,21 @@ craft designs and builds interfaces that don't look like every other generated a
 6. **Verify.** Screenshots in every theme and viewport, lint for contrast, focus, spacing and tap targets, then a critic agent's review.
 
 For a landing page told through scrolling, ask for a scroll or cinematic landing page. Generated imagery in that mode needs a `KIE_AI_API_KEY` in your environment (see `plugins/craft/.env.example`).
+
+## reel
+
+reel turns a feature of your app into a short product film for a marketing page. It doesn't record the screen. It reads the app's source and screenshots, rebuilds the screens it needs as animated HTML, and directs a camera, cursor and callouts over them. One scene gives you a live embed that stays sharp and follows the site's light and dark theme, plus MP4, WebM, GIF and a poster. Start it with `/reel` and a sentence, like `/reel show reordering layers in the photo editor`.
+
+1. **Setup.** `doctor` checks Node, Chromium and ffmpeg, and writes `reel.json` in your site repo with where the app's source lives.
+2. **Survey.** reel runs the app headlessly, takes reference shots and reads its colours, fonts and icons. Nothing opens on your screen.
+3. **Kit.** It builds only the pieces of the app's UI the scene needs, from the app's real values.
+4. **Storyboard.** For an app's first scene, you approve 3 to 5 stills, each beside its reference shot. Approval locks the kit, so later scenes reuse it.
+5. **Motion.** reel animates the scene and publishes a private preview page with a player, desktop and phone framing, and both themes. You approve it on desktop and on a phone.
+6. **Export.** Writes the embed and video files into your site, checks the weight budget (100 KB gzipped), that text stays readable down to the scene's smallest width, and that the loop has no seam. Then it prints the HTML and React snippets.
+
+Kits and scenes live in your site's repo, next to the pages that use them. Reference shots never leave `reel/references/`. Images inside a scene come from you or a stock library first. Generating one with kie.ai happens only when you ask, after reel shows the cost, and needs `KIE_AI_API_KEY` in your environment (see `plugins/reel/.env.example`). Scenes can autoplay, play when in view, follow the scroll, or be driven by your own code, GSAP included. `plugins/reel/skills/reel/references/embed.md` has each mode.
+
+Version 0.1.0 is verified on Linux with one real desktop app, plus a small toy kit. macOS, web apps and Android apps should work but haven't been tested yet.
 
 ## proof
 

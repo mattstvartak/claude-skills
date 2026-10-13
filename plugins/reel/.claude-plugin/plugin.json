@@ -1,0 +1,19 @@
+{
+  "name": "reel",
+  "version": "0.1.0",
+  "description": "Rebuilds a feature of your app as an animated HTML film for a marketing page, with a live embed and exported video, instead of a screen recording.",
+  "author": {
+    "name": "Matt Stvartak"
+  },
+  "homepage": "https://github.com/mattstvartak/claude-skills",
+  "repository": "https://github.com/mattstvartak/claude-skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "product-film",
+    "animation",
+    "marketing",
+    "video",
+    "landing-page",
+    "embed"
+  ]
+}

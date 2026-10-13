@@ -5,7 +5,7 @@
 <p align="center">
   <a href="LICENSE"><img alt="Licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-1f2533?style=flat-square"></a>
   <img alt="Claude Code plugins" src="https://img.shields.io/badge/Claude%20Code-plugins-e86a5a?style=flat-square">
-  <img alt="Ten plugins" src="https://img.shields.io/badge/plugins-10-f2a65a?style=flat-square">
+  <img alt="Eleven plugins" src="https://img.shields.io/badge/plugins-11-f2a65a?style=flat-square">
 </p>
 
 <p align="center">
@@ -39,6 +39,7 @@ Install the rest the same way, or only the ones you want. Restart Claude Code to
 | 🧭 | [**founder**](plugins/founder) | Turns your vision into a vision doc and one-page briefs for agent teams, collects their questions and works through every open detail with you. | `/founder` |
 | 📐 | [**blueprint**](plugins/blueprint) | Interviews you until it can write a full SOW, then a build plan sized for agent batches and a kickoff prompt. | `/blueprint` |
 | 🎨 | [**craft**](plugins/craft) | Designs and builds premium interfaces: brief, taste picker, OKLCH tokens, a prototype for review, production code, screenshot checks. | `/craft` |
+| 🎬 | [**reel**](plugins/reel) | Turns a feature of your app into a short product film for a marketing page. The UI is rebuilt as animated HTML, so you get a live embed that follows the site's theme, plus exported video. | `/reel` |
 | 🏗️ | [**foreman**](plugins/foreman) | Runs a build phase with parallel agent workers in separate worktrees, merges into one branch, sends questions to founder and closes with a review. | `/foreman` |
 | ✅ | [**proof**](plugins/proof) | `/tdd` builds test-first through agreed seams, one slice at a time. `/debug` reproduces, hypothesises, proves and fixes hard bugs. | `/tdd` `/debug` |
 | ✂️ | [**trim**](plugins/trim) | Lazy senior developer. The smallest complete code change, no unrequested abstractions, deletion over addition. | always on |

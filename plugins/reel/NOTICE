@@ -1,0 +1,8 @@
+reel
+Copyright 2026 Matt Stvartak
+
+The scrub MP4 settings (1080p, keyframe every 8 frames, CRF 20, x264 high
+profile, slow preset, no audio) follow the desktop mode of craft's encode.sh,
+which was adapted from scroll-craft (https://github.com/nateherkai/scroll-craft),
+Copyright (c) 2026 Nate Herk, licensed under the MIT License. Only the settings
+are shared. reel's encoder (scripts/lib/encode.mjs) is new code, not a copy.

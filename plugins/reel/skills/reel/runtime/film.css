@@ -1,0 +1,56 @@
+/* Film layer: stage, backdrop, frames, cursor, callouts. The stage is sized inline from the scene's fit.size. */
+
+.rf-host { position: relative; width: 100%; overflow: hidden; contain: strict; border-radius: var(--reel-host-radius, 0); }
+.rf-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; overflow: hidden; --bd-base: var(--reel-backdrop, oklch(0.24 0.008 260)); --bd-deep: var(--reel-backdrop-deep, oklch(0.14 0.005 260)); --bd-glow: var(--reel-glow, oklch(0.5 0.01 260 / 0.5)); --bd-grain: 0.07;
+  --win-shadow: var(--reel-window-shadow, 0 0 0 1px oklch(1 0 0 / 0.09), 0 2px 6px oklch(0.05 0 0 / 0.4), 0 40px 110px oklch(0.06 0 0 / 0.75));
+  --co-bg: var(--reel-callout-bg, oklch(0.97 0.003 260)); --co-fg: var(--reel-callout-fg, oklch(0.2 0.006 260)); --co-line: var(--reel-callout-line, oklch(0.97 0.003 260 / 0.75));
+  --fr-bg: var(--reel-chrome-bg, oklch(0.2 0.004 260)); --fr-line: var(--reel-chrome-line, oklch(1 0 0 / 0.09)); --fr-fg: var(--reel-chrome-fg, oklch(0.72 0.005 260));
+  --fr-field: var(--reel-chrome-field, oklch(0.15 0.004 260)); --fr-body: var(--reel-chrome-body, oklch(0.1 0.003 260)); }
+.rf-stage[data-theme='light'] { --bd-base: var(--reel-backdrop-light, oklch(0.9 0.006 260)); --bd-deep: var(--reel-backdrop-deep-light, oklch(0.82 0.008 260)); --bd-glow: var(--reel-glow-light, oklch(0.99 0.004 260 / 0.9)); --bd-grain: 0.05;
+  --win-shadow: var(--reel-window-shadow-light, 0 0 0 1px oklch(0.25 0 0 / 0.12), 0 2px 6px oklch(0.25 0 0 / 0.08), 0 36px 90px oklch(0.3 0 0 / 0.28));
+  --co-bg: var(--reel-callout-bg-light, oklch(0.2 0.006 260)); --co-fg: var(--reel-callout-fg-light, oklch(0.97 0.003 260)); --co-line: var(--reel-callout-line-light, oklch(0.2 0.006 260 / 0.6));
+  --fr-bg: var(--reel-chrome-bg-light, oklch(0.97 0.002 260)); --fr-line: var(--reel-chrome-line-light, oklch(0.25 0 0 / 0.12)); --fr-fg: var(--reel-chrome-fg-light, oklch(0.45 0.005 260));
+  --fr-field: var(--reel-chrome-field-light, oklch(0.93 0.003 260)); --fr-body: var(--reel-chrome-body-light, oklch(0.2 0.004 260)); }
+
+.rf-backdrop { position: absolute; inset: -12%;
+  background:
+    radial-gradient(42% 46% at 50% 44%, var(--bd-glow), transparent 70%),
+    radial-gradient(120% 90% at 50% 40%, var(--bd-base), var(--bd-deep) 75%); }
+.rf-grain { position: absolute; inset: 0; opacity: var(--bd-grain); mix-blend-mode: overlay; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+.rf-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.rf-tilt { position: absolute; left: 0; top: 0; }
+.rf-stage[data-moving] :is(.rf-world, .rf-tilt, .rf-backdrop) { will-change: transform; }
+.rf-frame { position: absolute; left: 0; top: 0; border-radius: 10px; overflow: hidden; box-shadow: var(--win-shadow); }
+.rf-content { position: absolute; overflow: hidden; }
+.rf-frame--none { border-radius: 0; box-shadow: none; }
+
+.rf-frame--browser { background: var(--fr-bg); }
+.rf-bar { position: absolute; left: 0; top: 0; right: 0; display: flex; align-items: center; padding: 0 14px; gap: 14px; background: var(--fr-bg); border-bottom: 1px solid var(--fr-line); }
+.rf-bar__dots { display: flex; gap: 7px; width: 60px; }
+.rf-bar__dots i { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--fr-line); }
+.rf-bar__url { flex: 0 1 460px; margin: 0 auto; height: 26px; padding: 0 12px; border-radius: 7px; background: var(--fr-field); box-shadow: inset 0 0 0 1px var(--fr-line);
+  font: 400 13px/26px var(--reel-callout-font, system-ui, sans-serif); color: var(--fr-fg); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rf-bar__url:empty { visibility: hidden; }
+.rf-bar::after { content: ''; width: 60px; }
+
+.rf-frame--phone { border-radius: 46px; background: var(--fr-body); box-shadow: inset 0 0 0 1px var(--fr-line), var(--win-shadow); }
+.rf-frame--phone .rf-content { border-radius: 34px; }
+
+.rf-cursor { position: absolute; left: 0; top: 0; width: 24px; height: 24px; transform-origin: 0 0; will-change: transform, opacity; pointer-events: none; }
+.rf-cursor svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.rf-callout { position: absolute; left: 0; top: 0; display: flex; align-items: center; transform-origin: 0 0; will-change: transform, opacity; pointer-events: none; white-space: nowrap; }
+.rf-callout__text { font-family: var(--reel-callout-font, system-ui, sans-serif); font-weight: 500; letter-spacing: -0.005em; color: var(--co-fg); background: var(--co-bg); border-radius: 999px; padding: 0.55em 1em 0.6em; box-shadow: 0 6px 24px oklch(0.05 0 0 / 0.35); }
+.rf-callout__lead { display: block; background: var(--co-line); position: relative; }
+.rf-callout__lead::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--co-bg); box-shadow: 0 0 0 2px oklch(0.05 0 0 / 0.25); }
+.rf-callout[data-side='left'] .rf-callout__lead::after { right: -3px; top: -3px; }
+.rf-callout[data-side='right'] { flex-direction: row-reverse; }
+.rf-callout[data-side='right'] .rf-callout__lead::after { left: -3px; top: -3px; }
+.rf-callout[data-side='top'] { flex-direction: column; }
+.rf-callout[data-side='top'] .rf-callout__lead::after { left: -3px; bottom: -3px; }
+.rf-callout[data-side='bottom'] { flex-direction: column-reverse; }
+.rf-callout[data-side='bottom'] .rf-callout__lead::after { left: -3px; top: -3px; }
+.rf-callout[data-side='below'] { flex-direction: column; }
+.rf-callout[data-side='below'] .rf-callout__lead { display: none; }

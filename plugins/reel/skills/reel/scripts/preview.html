@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reel preview</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(oklch(0.975 0.003 75), oklch(0.165 0.005 60));
+  --surface: light-dark(oklch(0.993 0.002 75), oklch(0.2 0.006 60));
+  --line: light-dark(oklch(0.88 0.006 75), oklch(0.31 0.006 60));
+  --fg: light-dark(oklch(0.23 0.01 60), oklch(0.94 0.006 75));
+  --fg-2: light-dark(oklch(0.46 0.01 60), oklch(0.72 0.008 70));
+  --accent: light-dark(oklch(0.58 0.15 52), oklch(0.8 0.14 70));
+  --err: light-dark(oklch(0.5 0.18 25), oklch(0.8 0.13 25));
+  --err-bg: light-dark(oklch(0.96 0.03 25), oklch(0.25 0.05 25));
+  --screen: light-dark(oklch(0.14 0.01 270), oklch(0.11 0.01 270));
+  --font-ui: 'Instrument Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 400 15px/1.5 var(--font-ui); -webkit-font-smoothing: antialiased; }
+.page { max-width: 1240px; margin: 0 auto; padding-inline: 24px; padding-block: 20px 56px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+@media (max-width: 640px) { .page { padding-inline: 16px; gap: 22px; } }
+
+.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+.brand { font: 500 14px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--fg-2); }
+.top h1 { margin: 0; font-size: 26px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; overflow-wrap: anywhere; }
+.status { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px 4px 10px; background: var(--surface); }
+.status i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+.monitor { display: grid; gap: 12px; min-width: 0; }
+.screen-wrap { background: var(--screen); border-radius: 12px; overflow: hidden; }
+.screen-wrap.is-phone { max-width: 400px; margin-inline: auto; width: 100%; }
+.track { position: relative; }
+.monitor.is-scroll .track { height: 380vh; }
+.monitor.is-scroll .sticky { position: sticky; top: 12px; }
+reel-scene { width: 100%; }
+
+.transport { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.btn { appearance: none; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 8px; height: 34px; min-width: 34px; padding: 0 10px; font: 500 13px var(--font-ui); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.btn:hover { border-color: var(--fg-2); }
+.btn:focus-visible, .seg button:focus-visible, input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn svg { width: 14px; height: 14px; fill: currentColor; }
+.tc { font: 500 13px var(--font-mono); font-variant-numeric: tabular-nums; }
+.tc.dim { color: var(--fg-2); }
+.scrub { flex: 1 1 200px; min-width: 0; height: 34px; display: flex; align-items: center; }
+.scrub input { width: 100%; margin: 0; accent-color: var(--accent); }
+
+.toggles { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.toggles fieldset { border: 0; margin: 0; padding: 0; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.toggles legend { float: left; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-2); margin-right: 8px; padding: 0; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { appearance: none; border: 0; background: transparent; color: var(--fg-2); font: 500 13px var(--font-ui); padding: 6px 11px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.note { margin: 0; font-size: 13px; color: var(--fg-2); min-height: 1.5em; }
+
+.error { margin: 0; padding: 10px 14px; border: 1px solid var(--err); border-radius: 8px; background: var(--err-bg); color: var(--err); font: 500 13px/1.5 var(--font-mono); overflow-wrap: anywhere; }
+.error[hidden] { display: none; }
+.loading { color: var(--fg-2); font-size: 13px; }
+
+.panel h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.panel > p { margin: 0 0 14px; color: var(--fg-2); font-size: 14px; max-width: 60ch; }
+.fit { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.fit figure { margin: 0; max-width: 100%; display: grid; gap: 6px; }
+.fit figcaption { font: 500 12px var(--font-mono); color: var(--fg-2); }
+.fit .box { overflow: hidden; border-radius: 10px; max-width: 100%; }
+.fit .cell { background: var(--screen); border-radius: 10px; overflow: hidden; transform-origin: 0 0; }
+
+.panel[hidden] { display: none; }
+.beats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); gap: 22px 20px; }
+.beat { margin: 0; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.beat h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.beat h3 span { font: 500 12px var(--font-mono); color: var(--fg-2); margin-right: 8px; }
+.beat p { margin: 0; font-size: 14px; color: var(--fg-2); }
+.shot { display: grid; gap: 4px; min-width: 0; }
+.shot img, .shot .none { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--line); background: var(--screen); }
+.shot .none { aspect-ratio: 8 / 5; display: grid; place-items: center; padding: 12px; text-align: center; background: var(--err-bg); color: var(--err); border-color: var(--err); font: 500 13px var(--font-mono); overflow-wrap: anywhere; }
+.shot figcaption, .tag { font: 500 11px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-2); }
+.pairs { display: grid; gap: 28px; }
+.pair { display: grid; gap: 10px; }
+.pair-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .pair-row { grid-template-columns: 1fr; } }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0 0 14px; }
+.stats div { display: grid; gap: 2px; }
+.stats dt { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-2); }
+.stats dd { margin: 0; font: 500 14px var(--font-mono); }
+.bad { color: var(--err); }
+.tbl { width: 100%; border-collapse: collapse; font: 500 13px var(--font-mono); margin: 0 0 14px; }
+.tbl th, .tbl td { text-align: left; padding: 5px 12px 5px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tblwrap { overflow-x: auto; }
+.fails { margin: 0 0 14px; padding: 10px 14px 10px 30px; border: 1px solid var(--err); border-radius: 8px; background: var(--err-bg); color: var(--err); font: 500 13px/1.5 var(--font-mono); }
+pre.code { margin: 0 0 14px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font: 400 12.5px/1.5 var(--font-mono); overflow-x: auto; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <span class="brand">reel</span>
+    <h1 id="title"></h1>
+    <span class="status"><i></i><span id="status">Loading</span></span>
+  </header>
+
+  <p class="error" id="error" role="alert" hidden></p>
+
+  <section class="monitor" id="monitor" aria-label="Scene player">
+    <div class="track" id="track"><div class="sticky"><div class="screen-wrap" id="screenWrap"><reel-scene id="main" drive="manual"></reel-scene></div></div></div>
+    <div class="transport">
+      <button class="btn" id="play" type="button" aria-label="Pause"></button>
+      <span class="tc" id="tc">00:00.00</span><span class="tc dim" id="dur">/ 00:00.00</span>
+      <div class="scrub"><input type="range" id="scrub" min="0" max="1000" step="1" value="0" aria-label="Scene time"></div>
+      <span class="tc dim" id="frameNo">f 000</span>
+    </div>
+    <div class="toggles">
+      <fieldset><legend>Theme</legend><span class="seg" data-key="theme"><button type="button" value="auto">Auto</button><button type="button" value="dark">Dark</button><button type="button" value="light">Light</button></span></fieldset>
+      <fieldset><legend>Framing</legend><span class="seg" data-key="framing"><button type="button" value="desktop">Desktop</button><button type="button" value="phone">Phone</button></span></fieldset>
+      <fieldset><legend>Drive</legend><span class="seg" data-key="drive"><button type="button" value="autoplay">Autoplay</button><button type="button" value="inview">In view</button><button type="button" value="scroll">Scroll</button><button type="button" value="manual">Manual</button></span></fieldset>
+    </div>
+    <p class="note" id="note"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="fitH">
+    <h2 id="fitH">Narrowest and design size</h2>
+    <p>The same scene at <code id="minW"></code> and at <code id="sizeW"></code>, both on the player's clock.</p>
+    <div class="fit" id="fit">
+      <figure><div class="box" id="boxMin"><div class="cell" id="cellMin"><reel-scene id="min" drive="manual"></reel-scene></div></div><figcaption id="capMin"></figcaption></figure>
+      <figure><div class="box" id="boxSize"><div class="cell" id="cellSize"><reel-scene id="size" drive="manual"></reel-scene></div></div><figcaption id="capSize"></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="panel" id="slot-storyboard" data-slot="storyboard" hidden></section>
+  <section class="panel" id="slot-side-by-side" data-slot="side-by-side" hidden></section>
+  <section class="panel" id="slot-export-report" data-slot="export-report" hidden></section>
+</div>
+
+<script id="reel-data" type="application/json">/*@data*/null</script>
+<script type="module">window.reelLoad = /*@runtime*/null;</script>
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const showError = (msg) => { const e = $('error'); e.hidden = false; e.textContent = e.textContent ? `${e.textContent}\n${msg}` : msg; e.style.whiteSpace = 'pre-wrap'; $('status').textContent = 'Error'; };
+addEventListener('error', (e) => showError(e.message));
+addEventListener('unhandledrejection', (e) => showError(e.reason?.message ?? String(e.reason)));
+
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs ?? {})) el.setAttribute(k, v);
+  el.append(...kids.flat().filter((k) => k !== null && k !== undefined));
+  return el;
+}
+function kb(n) { return `${(n / 1024).toFixed(1)} KB`; }
+
+function shot(src, cap, missing) {
+  return h('figure', { class: 'shot' }, src ? h('img', { src, alt: cap }) : h('div', { class: 'none' }, missing), h('figcaption', null, cap));
+}
+
+function section(id, title, intro, ...body) {
+  const el = document.getElementById(id);
+  el.replaceChildren(...[h('h2', null, title), intro ? h('p', null, intro) : null, ...body].flat().filter(Boolean));
+  el.hidden = false;
+}
+
+function renderSections({ storyboard, report }) {
+  if (storyboard) {
+    section('slot-storyboard', 'Storyboard', 'Each beat in light and dark.', h('div', { class: 'beats' }, storyboard.map((b, i) =>
+      h('div', { class: 'beat' },
+        h('h3', null, h('span', null, `${b.time}s`), b.title ?? `Beat ${i + 1}`),
+        b.caption ? h('p', null, b.caption) : null,
+        h('div', { class: 'pair-row' }, shot(b.light, 'light', 'no still'), shot(b.dark, 'dark', 'no still'))))));
+  }
+  if (storyboard?.some((b) => b.hasRef)) {
+    section('slot-side-by-side', 'Side by side', 'The scene still beside the reference shot, same theme.', h('div', { class: 'pairs' }, storyboard.flatMap((b, i) =>
+      ['light', 'dark'].map((theme) => {
+        const r = b.ref[theme];
+        const none = r.path ? `reference not found: ${r.path}` : `no ${theme} reference given`;
+        return h('div', { class: 'pair' },
+          h('h3', { class: 'tag' }, `${b.title ?? `Beat ${i + 1}`} · ${b.time}s · ${theme}`),
+          h('div', { class: 'pair-row' }, shot(b[theme], 'reel', 'no still'), shot(r.src, 'reference', none)));
+      }))));
+  }
+  if (report) {
+    const { budget, fit, seam, failures = [], snippet, published, ok } = report;
+    const stat = (k, v, bad) => h('div', null, h('dt', null, k), h('dd', { class: bad ? 'bad' : '' }, v));
+    section('slot-export-report', 'Export report', null,
+      h('dl', { class: 'stats' },
+        stat('Export', ok ? 'passed' : published ? 'forced past failures' : 'not exported', !ok),
+        budget ? stat('Size', `${kb(budget.total)} of ${kb(budget.limit)} gzipped`, !budget.ok) : null,
+        stat('Loop seam', seam ? seam.message : 'not checked', seam && !seam.ok)),
+      failures.length ? h('ul', { class: 'fails' }, failures.map((f) => h('li', null, f))) : null,
+      fit ? h('div', { class: 'tblwrap' }, h('table', { class: 'tbl' },
+        h('thead', null, h('tr', null, ['Width', 'Framing', 'Track', 'Text', 'Result'].map((c) => h('th', null, c)))),
+        h('tbody', null, fit.results.map((r) => h('tr', { class: r.ok ? '' : 'bad' },
+          h('td', null, `${r.width}px`), h('td', null, r.framing), h('td', null, r.track ?? ''), h('td', null, `${r.textPx.toFixed(1)}px`), h('td', null, r.ok ? 'fits' : 'fails')))))) : null,
+      snippet ? [h('h3', { class: 'tag' }, 'HTML snippet'), h('pre', { class: 'code' }, snippet.html), h('h3', { class: 'tag' }, 'React snippet'), h('pre', { class: 'code' }, snippet.react)] : null);
+  }
+}
+
+const FPS = 60;
+const pad = (n, w = 2) => String(n).padStart(w, '0');
+const tc = (s) => { const cs = Math.round(s * 100); return `${pad(Math.floor(cs / 6000))}:${pad(Math.floor(cs / 100) % 60)}.${pad(cs % 100)}`; };
+const ICON_PLAY = '<svg viewBox="0 0 14 14"><path d="M3 1.8v10.4L12 7z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 14 14"><rect x="2.5" y="2" width="3" height="10" rx="0.6"/><rect x="8.5" y="2" width="3" height="10" rx="0.6"/></svg>';
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+// The runtime and kit come as one inline script, since an Artifact's CSP refuses blob: and data: scripts and stylesheets.
+// The scene, kit and styles go to each element as its inline property.
+function loadRuntime(data) {
+  const load = window.reelLoad;
+  const kit = { ...load('@kit').default, fonts: [] };
+  for (const css of data.fonts) document.head.append(Object.assign(document.createElement('style'), { textContent: css }));
+  const els = [$('main'), $('min'), $('size')];
+  els.forEach((el) => { el.inline = { scene: data.scene, kit, css: data.css }; });
+  const { progressFor } = load('drive.js');
+  load('reel.js');
+  return { els, progressFor };
+}
+
+function fillHeader(scene) {
+  const [W] = scene.fit.size, minW = scene.fit.minWidth;
+  $('title').textContent = scene.id ?? 'scene';
+  document.title = `${scene.id ?? 'Reel'} preview`;
+  $('dur').textContent = `/ ${tc(scene.duration)}`;
+  $('scrub').max = Math.round(scene.duration * 1000);
+  $('minW').textContent = `${minW}px`;
+  $('sizeW').textContent = `${W}px`;
+  $('capMin').textContent = `fit.minWidth, ${minW}px`;
+  $('capSize').textContent = `fit.size, ${W}px`;
+}
+
+// Each view lays out at its true css width, so the camera and callouts switch as on a page.
+// A view wider than the column is shrunk by a transform; its layout width stays true.
+function watchFitLayout(scene) {
+  const widths = [['Min', scene.fit.minWidth], ['Size', scene.fit.size[0]]];
+  const layout = () => {
+    const avail = $('fit').clientWidth;
+    for (const [k, n] of widths) {
+      const cell = $('cell' + k), s = Math.min(1, avail / n);
+      cell.style.width = `${n}px`;
+      cell.style.transform = s < 1 ? `scale(${s})` : '';
+      $('box' + k).style.width = `${n * s}px`;
+      $('box' + k).style.height = `${cell.offsetHeight * s}px`;
+    }
+  };
+  new ResizeObserver(layout).observe($('fit'));
+  layout();
+  return layout;
+}
+
+function setPlaying(st, v) {
+  st.playing = v;
+  $('play').innerHTML = v ? ICON_PAUSE : ICON_PLAY;
+  $('play').setAttribute('aria-label', v ? 'Pause' : 'Play');
+}
+
+function updateNote(view) {
+  const parts = [];
+  if (view.drive === 'scroll') parts.push('Scroll the page to scrub the scene. Scroll mode ignores play and pause.');
+  if (view.drive === 'inview') parts.push('Plays while at least half the player is on screen, pauses when it leaves.');
+  if (view.drive === 'manual') parts.push('Manual: the scene only moves when you scrub.');
+  if (reduced.matches) parts.push('Reduced motion is on, so the player starts paused on the poster frame.');
+  $('note').textContent = parts.join(' ');
+}
+
+function wireTransport(st) {
+  $('play').addEventListener('click', () => setPlaying(st, !st.playing));
+  $('scrub').addEventListener('input', (e) => {
+    setPlaying(st, false);
+    if (st.view.drive === 'scroll') return;
+    st.p = Math.min(1, e.target.value / 1000 / st.D);
+  });
+}
+
+function wireToggles(st) {
+  const { view } = st;
+  document.querySelectorAll('.seg').forEach((seg) => {
+    const key = seg.dataset.key;
+    const sync = () => seg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.value === view[key])));
+    seg.addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      view[key] = b.value;
+      sync();
+      if (key === 'theme') {
+        if (b.value === 'auto') delete document.documentElement.dataset.theme;
+        else document.documentElement.dataset.theme = b.value;
+      }
+      if (key === 'framing') $('screenWrap').classList.toggle('is-phone', b.value === 'phone');
+      if (key === 'drive') {
+        $('monitor').classList.toggle('is-scroll', b.value === 'scroll');
+        if (b.value === 'autoplay' || b.value === 'inview') setPlaying(st, !reduced.matches);
+        st.prev = null;
+      }
+      updateNote(view);
+    });
+    sync();
+  });
+  new IntersectionObserver((es) => { st.visible = es.at(-1).intersectionRatio; }, { threshold: [0, 0.25, 0.5, 0.75, 1] }).observe($('screenWrap'));
+}
+
+function startLoop(st, els, progressFor, scene) {
+  const tick = (now) => {
+    const mode = st.view.drive;
+    if (mode !== 'manual' && (mode === 'scroll' || st.playing)) {
+      st.p = progressFor(mode, {
+        rect: $('main').getBoundingClientRect(),
+        viewport: { height: innerHeight },
+        track: mode === 'scroll' ? $('track').getBoundingClientRect() : undefined,
+        now: now / 1000, prev: st.prev, duration: st.D, loop: scene.loop,
+        reducedMotion: reduced.matches, visible: st.visible, manual: st.p,
+      });
+    }
+    st.prev = { progress: st.p, now: now / 1000 };
+    if (st.p !== st.drawn) {
+      st.drawn = st.p;
+      const t = st.p * st.D;
+      els.forEach((el) => el.seek(t));
+      $('scrub').value = Math.round(t * 1000);
+      $('tc').textContent = tc(t);
+      $('frameNo').textContent = `f ${pad(Math.floor(t * FPS), 3)}`;
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+async function main() {
+  const data = JSON.parse(document.getElementById('reel-data').textContent.replace(/^\s*\/\*@data\*\/\s*/, ''));
+  const { scene } = data;
+  const { els, progressFor } = loadRuntime(data);
+  const st = {
+    D: scene.duration, view: { theme: 'auto', framing: 'desktop', drive: 'autoplay' },
+    p: reduced.matches ? (scene.posterAt ?? 0) / scene.duration : 0,
+    playing: !reduced.matches, prev: null, visible: 1, drawn: -1,
+  };
+  fillHeader(scene);
+  const layoutFit = watchFitLayout(scene);
+  wireTransport(st);
+  wireToggles(st);
+  setPlaying(st, st.playing);
+  updateNote(st.view);
+  renderSections(data);
+  await Promise.all(els.map((el) => el.ready));
+  layoutFit();
+  $('status').textContent = 'Ready';
+  startLoop(st, els, progressFor, scene);
+}
+try {
+  await main();
+} catch (err) {
+  showError(err.message);
+  console.error(err);
+}
+</script>
+</body>
+</html>

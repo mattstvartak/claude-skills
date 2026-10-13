@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reel.onenomad.dev/scene.schema.json",
+  "type": "object",
+  "required": ["id", "kit", "kitVersion", "fit", "duration", "tracks", "cameras"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "minLength": 1 },
+    "kit": { "type": "string", "minLength": 1 },
+    "kitVersion": { "type": "integer", "minimum": 1 },
+    "alt": { "type": "string" },
+    "fit": {
+      "type": "object",
+      "required": ["size", "minWidth"],
+      "additionalProperties": false,
+      "properties": {
+        "size": { "$ref": "#/$defs/size" },
+        "minWidth": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "frame": {
+      "oneOf": [
+        { "$ref": "#/$defs/frameKind" },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": { "kind": { "$ref": "#/$defs/frameKind" }, "url": { "type": "string" } }
+        }
+      ]
+    },
+    "viewport": { "$ref": "#/$defs/size" },
+    "duration": { "type": "number", "exclusiveMinimum": 0 },
+    "loop": { "type": "boolean", "default": true },
+    "posterAt": { "type": "number", "minimum": 0 },
+    "seed": { "type": "integer" },
+    "targets": { "type": "object", "additionalProperties": { "type": "string", "minLength": 1 } },
+    "tracks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["keys"],
+            "additionalProperties": false,
+            "properties": {
+              "keys": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "array", "minItems": 2, "maxItems": 2, "prefixItems": [{ "type": "number", "minimum": 0 }, {}] }
+              },
+              "ease": { "$ref": "#/$defs/ease" },
+              "over": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        "cursor": {
+          "type": "object",
+          "required": ["from", "path"],
+          "additionalProperties": false,
+          "properties": {
+            "from": { "$ref": "#/$defs/point" },
+            "show": { "$ref": "#/$defs/span" },
+            "hide": { "$ref": "#/$defs/span" },
+            "drift": { "type": "number", "minimum": 0 },
+            "path": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": ["to", "at"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "to": { "$ref": "#/$defs/point" },
+                      "at": { "$ref": "#/$defs/span" },
+                      "ease": { "$ref": "#/$defs/ease" },
+                      "bend": { "type": "number" }
+                    }
+                  },
+                  { "type": "object", "required": ["press"], "additionalProperties": false, "properties": { "press": { "type": "number", "minimum": 0 } } },
+                  { "type": "object", "required": ["release"], "additionalProperties": false, "properties": { "release": { "type": "number", "minimum": 0 } } }
+                ]
+              }
+            }
+          }
+        },
+        "callouts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["copy", "anchor", "in", "out"],
+            "additionalProperties": false,
+            "properties": {
+              "copy": { "type": "string", "minLength": 1 },
+              "anchor": { "$ref": "#/$defs/point" },
+              "side": { "enum": ["left", "right", "top", "bottom"] },
+              "in": { "$ref": "#/$defs/span" },
+              "out": { "$ref": "#/$defs/span" }
+            }
+          }
+        }
+      }
+    },
+    "cameras": {
+      "type": "object",
+      "required": ["framings", "default"],
+      "additionalProperties": false,
+      "properties": {
+        "framings": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "required": ["focus"],
+            "additionalProperties": false,
+            "properties": {
+              "focus": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/focusItem" } },
+              "pad": { "type": "number", "minimum": 0 },
+              "establishing": { "type": "boolean" }
+            }
+          }
+        },
+        "default": { "$ref": "#/$defs/cameraTrack" },
+        "phone": {
+          "type": "object",
+          "required": ["keys"],
+          "additionalProperties": false,
+          "properties": {
+            "below": { "type": "number", "exclusiveMinimum": 0, "default": 600 },
+            "keys": { "$ref": "#/$defs/cameraKeys" }
+          }
+        }
+      }
+    },
+    "copy": { "type": "object", "additionalProperties": { "type": "string" } },
+    "media": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "file"],
+        "additionalProperties": false,
+        "properties": { "id": { "type": "string" }, "file": { "type": "string" } }
+      }
+    },
+    "storyboard": {
+      "type": "object",
+      "required": ["times"],
+      "additionalProperties": false,
+      "properties": {
+        "times": { "type": "array", "minItems": 3, "maxItems": 5, "items": { "type": "number", "minimum": 0 } },
+        "approvedAt": { "type": "string" },
+        "beats": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "required": ["title", "caption", "ref"],
+            "additionalProperties": false,
+            "properties": {
+              "title": { "type": "string" },
+              "caption": { "type": "string" },
+              "ref": {
+                "oneOf": [
+                  { "type": "string", "minLength": 1 },
+                  { "type": "object", "required": ["light", "dark"], "additionalProperties": false, "properties": { "light": { "type": "string", "minLength": 1 }, "dark": { "type": "string", "minLength": 1 } } }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "size": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "exclusiveMinimum": 0 } },
+    "span": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "minimum": 0 } },
+    "frameKind": { "enum": ["window", "browser", "phone", "none"] },
+    "ease": {
+      "oneOf": [
+        { "enum": ["linear", "camera", "move", "drag", "out", "soft"] },
+        { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "number" } }
+      ]
+    },
+    "point": {
+      "type": "object",
+      "required": ["at"],
+      "additionalProperties": false,
+      "properties": {
+        "at": { "type": "string", "minLength": 1 },
+        "x": { "type": "number", "default": 0.5 },
+        "y": { "type": "number", "default": 0.5 },
+        "dx": { "type": "number", "default": 0 },
+        "dy": { "type": "number", "default": 0 }
+      }
+    },
+    "focusItem": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "required": ["at", "w", "h"],
+          "additionalProperties": false,
+          "properties": {
+            "at": { "type": "string", "minLength": 1 },
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "dx": { "type": "number" },
+            "dy": { "type": "number" },
+            "w": { "type": "number", "exclusiveMinimum": 0 },
+            "h": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        }
+      ]
+    },
+    "cameraKeys": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 3,
+        "prefixItems": [{ "type": "number", "minimum": 0 }, { "type": "string" }, { "$ref": "#/$defs/ease" }]
+      }
+    },
+    "cameraTrack": {
+      "type": "object",
+      "required": ["keys"],
+      "additionalProperties": false,
+      "properties": { "keys": { "$ref": "#/$defs/cameraKeys" } }
+    }
+  }
+}
