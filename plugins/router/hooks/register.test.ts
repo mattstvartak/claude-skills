@@ -12,8 +12,18 @@ const measure = (kind: string, percentUsed: number) => ({
 
 const fakeRoute = (on: On, runs: string[][], stdout = 'Switched from a to b (b@example.com).') =>
   on('process.run', ($, e) => {
-    runs.push(e.argv.slice(1) as string[])
-    return { value: { exitCode: 0, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
+    const args = e.argv.slice(1) as string[]
+    runs.push(args)
+    const out = args[0] === 'list' ? 'one\ta@example.com\t*\t\ntwo\tb@example.com\t\t\n' : stdout
+    return { value: { exitCode: 0, stdout: out, stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
+  })
+
+// Answers the account picker with `pick`, keeping what it was asked.
+const fakePicker = (on: On, asked: { question: string; options: string[] }[], pick: string) =>
+  on('tool.call', { tool: 'AskUserQuestion' }, ($, e) => {
+    const [q] = e.questions
+    asked.push({ question: q?.question ?? '', options: q?.options.map(o => o.label) ?? [] })
+    return { result: { questions: e.questions, answers: { [q?.question ?? '']: pick } } as never }
   })
 
 // What the engine draws above the prompt when no plugin does: nothing.
@@ -74,19 +84,42 @@ test('Not now hides the band until that window resets', async ($, on) => {
   expect(await (await band($)).find({ key: 'reroute' })).toBeUndefined()
 })
 
-test('/route lists accounts with usage and /route <name> switches', async ($, on) => {
+test('/route asks which account and switches to the pick', async ($, on) => {
   const runs: string[][] = []
-  fakeRoute(on, runs, '* onenomad  a@example.com')
+  const asked: { question: string; options: string[] }[] = []
+  fakeRoute(on, runs)
+  fakePicker(on, asked, 'two (b@example.com)')
   on('session.measure', ($, e) => ({ changed: e.changed }))
   on('command.run', () => ({ text: 'unanswered' }))
 
   await $.session.measure(measure('five_hour', 42) as never)
-  const listed = await $.command.run({ command: 'route', args: '' } as never)
-  expect(listed.text).toContain('* onenomad  a@example.com')
-  expect(listed.text).toContain('5-hour 42%')
+  const done = await $.command.run({ command: 'route', args: '' } as never)
 
-  await $.command.run({ command: 'route', args: ' personal ' } as never)
-  expect(runs).toEqual([['status'], ['use', 'personal']])
+  expect(asked).toEqual([
+    { question: "You're on one (5-hour 42%). Switch to which account?", options: ['two (b@example.com)', 'Stay on one'] },
+  ])
+  expect(runs).toEqual([['list'], ['use', 'two']])
+  expect(done.text).toBe('Switched from a to b (b@example.com).')
+})
+
+test('/route stays put when the pick is to stay', async ($, on) => {
+  const runs: string[][] = []
+  fakeRoute(on, runs)
+  fakePicker(on, [], 'Stay on one')
+  on('command.run', () => ({ text: 'unanswered' }))
+
+  const done = await $.command.run({ command: 'route', args: '' } as never)
+  expect(runs).toEqual([['list']])
+  expect(done.text).toBe('Staying on one.')
+})
+
+test('/route <name> switches without asking', async ($, on) => {
+  const runs: string[][] = []
+  fakeRoute(on, runs)
+  on('command.run', () => ({ text: 'unanswered' }))
+
+  await $.command.run({ command: 'route', args: ' two ' } as never)
+  expect(runs).toEqual([['use', 'two']])
 })
 
 test('/login-add signs in through claude-route add without holding the command', async ($, on) => {

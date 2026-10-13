@@ -2,8 +2,9 @@
 
 Switch a running Claude Code session between your Claude subscriptions without
 running `/login` again. Sign in to each account once and router keeps the
-logins. `/route` lists them and `/route <name>` moves the session over. Your
-next message goes out on the new account and the conversation carries on.
+logins. `/route` asks which one to switch to, with the active account's usage
+in the question, and `/route <name>` switches straight away. Your next message
+goes out on the new account and the conversation carries on.
 
 `/login-add <name>` adds an account. It opens the same browser sign-in as
 `/login`, but in a throwaway config folder, so the session you're in stays on
