@@ -1,6 +1,6 @@
 # Media
 
-Photos and other images inside a scene (a picture in a photo editor's canvas, a hero shot). Everything goes through `scripts/media.mjs`, which copies the file into the scene's own folder, `<dir>/scenes/<id>/media/`, and records where it came from in `<dir>/media/licences.json`. Media stays inside the scene folder because validate rejects paths outside it and export ships only that folder. In `scene.json`, point at `media/<file>`.
+Photos and other images inside a scene (a picture in a photo editor's canvas, a hero shot). Everything goes through `scripts/media.mjs`, which copies the file into the scene's own folder, `<dir>/scenes/<id>/media/`, and records where it came from in `<dir>/media/licences.json`. A site that keeps one reel folder per app (`<dir>/<app>/scenes/<id>`) works the same way: `--scene <id>` finds the scene in either place, and its licences go in `<dir>/<app>/media/licences.json`. Media stays inside the scene folder because validate rejects paths outside it and export ships only that folder. In `scene.json`, point at `media/<file>`.
 
 ## Where to look, in order
 

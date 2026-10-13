@@ -23,6 +23,23 @@ const reelDir = (cwd) => {
   const { root, config } = loadConfig(cwd)
   return path.join(root, config.dir)
 }
+// A reel dir holds scenes/ and kits/. Most sites have one at <dir>; some keep one per app at <dir>/<app>.
+// Licences live next to the scenes/ folder that holds the scene, the same base stage.mjs serves from.
+const reelBases = (cwd) => {
+  const reel = path.resolve(reelDir(cwd))
+  const subs = fs.existsSync(reel)
+    ? fs.readdirSync(reel, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => path.join(reel, d.name))
+    : []
+  return [reel, ...subs].filter((b) => fs.existsSync(path.join(b, 'scenes')))
+}
+export function sceneBase(cwd, scene) {
+  const reel = reelDir(cwd)
+  const found = KEBAB.test(scene ?? '') ? reelBases(cwd).filter((b) => fs.existsSync(path.join(b, 'scenes', scene))) : []
+  if (!found.length) throw new Error(`scene "${scene}" not found under ${reel}`)
+  if (found.length > 1)
+    throw new Error(`scene "${scene}" is in more than one reel folder: ${found.map((b) => path.relative(reel, b) || '.').join(', ')}`)
+  return found[0]
+}
 const readLicences = (reel) => {
   const list = path.join(reel, 'media', 'licences.json')
   return fs.existsSync(list) ? JSON.parse(fs.readFileSync(list, 'utf8')) : []
@@ -41,9 +58,7 @@ export function validateProvenance(p) {
 export function addMedia(file, provenance, { cwd = process.cwd(), scene, name } = {}) {
   validateProvenance(provenance)
   if (!fs.existsSync(file)) throw new Error(`file not found: ${file}`)
-  const reel = reelDir(cwd)
-  if (!KEBAB.test(scene ?? '') || !fs.existsSync(path.join(reel, 'scenes', scene)))
-    throw new Error(`scene "${scene}" not found under ${path.join(reel, 'scenes')}`)
+  const reel = sceneBase(cwd, scene)
   const fileName = name ?? path.basename(file)
   if (fileName !== path.basename(fileName)) throw new Error(`--name must be a bare file name, got "${fileName}"`)
   const dir = path.join(reel, 'scenes', scene, 'media')
@@ -73,21 +88,22 @@ export function addMedia(file, provenance, { cwd = process.cwd(), scene, name } 
 }
 
 export function checkMedia(cwd = process.cwd()) {
-  const reel = reelDir(cwd)
-  const entries = readLicences(reel)
-  const scenes = path.join(reel, 'scenes')
   const problems = []
-  for (const id of fs.existsSync(scenes) ? fs.readdirSync(scenes) : []) {
-    const sceneFile = path.join(scenes, id, 'scene.json')
-    if (!fs.existsSync(sceneFile)) continue
-    for (const m of JSON.parse(fs.readFileSync(sceneFile, 'utf8')).media ?? []) {
-      const abs = path.resolve(scenes, id, m.file)
-      const rel = path.relative(reel, abs).split(path.sep).join('/')
-      const e = rel.startsWith('..') ? null : entries.find((x) => x.file === rel)
-      if (!fs.existsSync(abs)) problems.push(`${id}: ${m.file} does not exist`)
-      if (!e) problems.push(`${id}: ${m.file} has no entry in media/licences.json`)
-      else if (BLOCKING.test(e.licence))
-        problems.push(`${id}: ${m.file} licence "${e.licence}" does not allow a public marketing page`)
+  for (const reel of reelBases(cwd)) {
+    const entries = readLicences(reel)
+    const scenes = path.join(reel, 'scenes')
+    for (const id of fs.readdirSync(scenes)) {
+      const sceneFile = path.join(scenes, id, 'scene.json')
+      if (!fs.existsSync(sceneFile)) continue
+      for (const m of JSON.parse(fs.readFileSync(sceneFile, 'utf8')).media ?? []) {
+        const abs = path.resolve(scenes, id, m.file)
+        const rel = path.relative(reel, abs).split(path.sep).join('/')
+        const e = rel.startsWith('..') ? null : entries.find((x) => x.file === rel)
+        if (!fs.existsSync(abs)) problems.push(`${id}: ${m.file} does not exist`)
+        if (!e) problems.push(`${id}: ${m.file} has no entry in media/licences.json`)
+        else if (BLOCKING.test(e.licence))
+          problems.push(`${id}: ${m.file} licence "${e.licence}" does not allow a public marketing page`)
+      }
     }
   }
   return problems
@@ -124,11 +140,11 @@ export async function generate(
   if (!key) throw new Error('KIE_AI_API_KEY is not set in the environment')
   let work
   try {
-    if (!fs.existsSync(path.join(reelDir(cwd), 'scenes', String(scene)))) throw new Error(`scene "${scene}" not found`)
+    const base = sceneBase(cwd, String(scene))
     const ext = path.extname(out) || '.png'
     const stem = path.basename(out, path.extname(out))
     const names = Array.from({ length: calls }, (_, i) => (calls === 1 ? `${stem}${ext}` : `${stem}-${i + 1}${ext}`))
-    const taken = names.filter((n) => fs.existsSync(path.join(reelDir(cwd), 'scenes', scene, 'media', n)))
+    const taken = names.filter((n) => fs.existsSync(path.join(base, 'scenes', scene, 'media', n)))
     if (taken.length) throw new Error(`refusing: ${taken.join(', ')} already in the scene's media, pick another name`)
     const est = estimate({ calls, creditsPerCall })
     if (est.credits == null) throw new Error('refusing: no verified price, pass --credits-per-call')
