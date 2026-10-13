@@ -9,7 +9,7 @@ export const stillName = (scene, theme, t) => `${scene.id}-${theme}-${t}.png`
 
 async function main() {
   const { values, positionals } = parseCli(
-    '<scene.json> --times 0,2.5,posterAt,storyboard --out <dir> [--theme light|dark|both] [--width N] [--scale 2]',
+    '<scene.json> --times 0,2.5,posterAt,storyboard --out <dir> [--theme light|dark|both] [--width N] [--scale 2] [--transparent]',
     {
       min: 1,
       required: ['times', 'out'],
@@ -19,6 +19,7 @@ async function main() {
         theme: { type: 'string', default: 'light' },
         width: { type: 'string' },
         scale: { type: 'string', default: '2' },
+        transparent: { type: 'boolean', default: false },
       },
       enums: { theme: ['light', 'dark', 'both'] },
       numeric: ['width', 'scale'],
@@ -44,7 +45,12 @@ async function main() {
   const width = values.width ? Number(values.width) : undefined
   const out = resolve(values.out)
   mkdirSync(out, { recursive: true })
-  const stage = await openStage(scenePath, { width, scale: Number(values.scale), theme: themes[0] })
+  const stage = await openStage(scenePath, {
+    width,
+    scale: Number(values.scale),
+    theme: themes[0],
+    transparent: values.transparent,
+  })
   try {
     for (const theme of themes) {
       if (theme !== themes[0]) await stage.mount({ width, theme })

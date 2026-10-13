@@ -33,7 +33,7 @@ export const kitDir = (scenePath, kit) => join(reelDir(scenePath), 'kits', kit)
 
 const nextFrames = () => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)))
 
-export async function openStage(scenePath, { width, theme = 'light', scale = 2 } = {}) {
+export async function openStage(scenePath, { width, theme = 'light', scale = 2, transparent = false } = {}) {
   const abs = resolve(scenePath)
   const scene = JSON.parse(await readFile(abs, 'utf8'))
   // only the reel folder and the runtime are served, not the rest of the site
@@ -95,7 +95,7 @@ export async function openStage(scenePath, { width, theme = 'light', scale = 2 }
       },
       async shot(t) {
         await stage.seek(t)
-        return page.locator('#subject').screenshot()
+        return page.locator('#subject').screenshot({ omitBackground: transparent })
       },
       async close() {
         await browser.close()
