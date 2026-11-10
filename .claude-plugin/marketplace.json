@@ -161,6 +161,19 @@
         "usage-limits",
         "rate-limits"
       ]
+    },
+    {
+      "name": "human-copy",
+      "source": "./plugins/human-copy",
+      "description": "Write and rewrite prose so it reads like a person wrote it: pick the reader, get the specifics, draft plainly, then lint for the current AI tells and fix them at the cause.",
+      "version": "0.1.0",
+      "keywords": [
+        "writing",
+        "copy",
+        "editing",
+        "ai-tells",
+        "style"
+      ]
     }
   ]
 }

@@ -46,6 +46,7 @@ Install the rest the same way, or only the ones you want. Restart Claude Code to
 | 🧻 | [**napkin**](plugins/napkin) | Lazy senior architect. Fewest components that meet the real requirements, sized for today's scale. | always on |
 | 📟 | [**pager**](plugins/pager) | Lazy senior DevOps. Fewest moving parts, managed over self-hosted, every change with a way back. | always on |
 | 🔍 | [**nitpick**](plugins/nitpick) | Opinionated senior dev review: readable names, clean structure, no repetition, code smells, mainstream libraries, plus a second reviewer checking the change against its spec. | `/nitpick` |
+| ✍️ | [**human-copy**](plugins/human-copy) | Writes and rewrites prose for a real reader, then lints it for the current AI tells: staged contrasts, inflated claims, lists of three, stock words, chat leftovers. | `/human-copy` |
 
 **Always on** means the plugin adds its rules at the start of every session and to every subagent, and the rules only kick in when the task is in its area. trim covers application code, napkin system design and pager infrastructure. Switch each with `/<name> lite|full|ultra|off`.
 

@@ -12,6 +12,7 @@ This guide covers installing the plugins, what each one does day to day, and how
 - [proof](#proof)
 - [trim, napkin and pager](#trim-napkin-and-pager)
 - [nitpick](#nitpick)
+- [human-copy](#human-copy)
 - [A full project, start to finish](#a-full-project-start-to-finish)
 - [Updating and removing](#updating-and-removing)
 - [Troubleshooting](#troubleshooting)
@@ -33,11 +34,12 @@ In Claude Code:
 /plugin install napkin@claude-skills
 /plugin install pager@claude-skills
 /plugin install nitpick@claude-skills
+/plugin install human-copy@claude-skills
 ```
 
 Or from a terminal, with `claude plugin marketplace add` and `claude plugin install` and the same arguments. Restart Claude Code afterwards.
 
-Install only what you'll use. kickoff, founder and foreman need blueprint, because they work from its SOW and build plan. The others stand alone. trim replaces [ponytail](https://github.com/DietrichGebert/ponytail), so don't install both.
+Install only what you'll use. kickoff, founder and foreman need blueprint, because they work from its SOW and build plan. The others stand alone. trim replaces [ponytail](https://github.com/DietrichGebert/ponytail), so don't install both. human-copy overlaps with [humanizer](https://github.com/blader/humanizer), and one of the two is enough.
 
 **Requirements.** trim, napkin and pager run small Node hooks, so `node` must be on the PATH Claude Code uses for hooks. craft needs Node 20 or later. Its scripts install Playwright into `~/.cache/craft-tools` the first time they run. reel needs Node 20 or later and a full ffmpeg build. It uses craft's Playwright when that's already installed, and otherwise installs its own into `~/.cache/reel-tools`.
 
@@ -225,6 +227,26 @@ Then it loops. Every task whose blockers are merged goes to a Sonnet worker in i
 The phase ends with nitpick against the plan and brief, one fix pass, and a report: what's done, blocked or failed, the commits, the check results, assumptions to confirm, questions for you, and token spend. Progress is saved in `docs/foreman/PROGRESS.md`, so `/foreman` picks up a stopped run.
 
 foreman never pushes, opens a pull request, merges into a trunk or deploys.
+
+## human-copy
+
+A writing skill. Claude uses it when it drafts or edits anything a person will read: landing page copy, emails, docs, PR descriptions, commit messages, chat replies. Ask for copy, ask it to humanize a draft, or ask it to check a file for AI tells.
+
+```
+/human-copy                      # then say what you want written
+/human-copy rewrite docs/intro.md
+/human-copy review the PR description
+```
+
+It picks the reader, collects the facts the piece rests on, drafts plainly, and then runs its lint script:
+
+```
+python3 plugins/human-copy/skills/human-copy/scripts/lint.py README.md
+```
+
+The script prints findings by line. `fix` findings (dashes, not-X-but-Y contrasts, stock vocabulary, chat leftovers, bold labels on list items) set the exit code to 1. `check` findings are judgement calls, such as sentences that are all the same length. Code, double-quoted text and blockquotes are skipped.
+
+The tells change with each model release. The word lists live in `scripts/lint.py`, and `references/sources.md` says where to look when they need updating. Needs Python 3.
 
 ## A full project, start to finish
 
